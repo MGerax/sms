@@ -1,9 +1,11 @@
 package com.and.sms.service;
 
+import com.and.sms.dao.UserRepository;
 import com.and.sms.model.User;
 import com.and.sms.model.UserPair;
 import com.and.sms.utils.UserPairUtils;
 import com.google.common.collect.Lists;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.AbstractMap;
@@ -23,9 +25,12 @@ import static com.and.sms.utils.UserPairUtils.buildUserPairsWithCommonInterests;
 
 @Service
 public class ComputationService {
+    @Autowired
+    private UserRepository userRepository;
 
-    public List<UserPair> findUserPairListWithMaxLength(List<User> users) {
-        List<UserPair> allUserPairs = buildUserPairsWithCommonInterests(users);
+    public List<UserPair> findUserPairListWithMaxLength(Set<String> userNames) {
+        Iterable<User> users = userRepository.findAllById(userNames);
+        List<UserPair> allUserPairs = buildUserPairsWithCommonInterests(Lists.newArrayList(users));
         return getUserPairListWithMaxLength(allUserPairs);
     }
 

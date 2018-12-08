@@ -1,10 +1,18 @@
 package com.and.sms.model;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.util.Objects;
 import java.util.Set;
 
+@Entity
 public class User {
+    @Id
     private String name;
+    @Column
+    @Convert(converter = InterestConverter.class)
     private Set<String> interests;
 
     public String getName() {
