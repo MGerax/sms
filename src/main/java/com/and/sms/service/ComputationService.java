@@ -3,7 +3,7 @@ package com.and.sms.service;
 import com.and.sms.dao.UserRepository;
 import com.and.sms.model.User;
 import com.and.sms.model.UserPair;
-import com.and.sms.utils.UserPairUtils;
+import com.and.sms.service.algorithm.PairBuilderTask;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,12 +13,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.and.sms.utils.UserPairUtils.buildUserPairsWithCommonInterests;
 
@@ -66,27 +65,8 @@ public class ComputationService {
     }
 
     private List<List<UserPair>> getUserPairListCollection(List<UserPair> userPairs) {
-        List<List<UserPair>> finalUserPairListCollection = new ArrayList<>();
-        for (int i = 0; i < userPairs.size(); i++) {
-            UserPair baseUserPair = userPairs.get(i);
-            List<UserPair> newUserPairList = UserPairUtils.removeUserPairsWithUserDuplication(userPairs,
-                    buildUserSet(baseUserPair.getUser1(), baseUserPair.getUser2()));
-            if (newUserPairList.isEmpty()) {
-                finalUserPairListCollection.add(Lists.newArrayList(baseUserPair));
-            } else {
-                List<List<UserPair>> baseUserPairListCollections = getUserPairListCollection(newUserPairList);
-                baseUserPairListCollections.forEach(baseUserPairList -> {
-                    baseUserPairList.add(baseUserPair);
-                    finalUserPairListCollection.add(baseUserPairList);
-                });
-            }
-        }
-        return finalUserPairListCollection;
-    }
-
-    private Set<User> buildUserSet(User... users) {
-        Set<User> userSet = new HashSet<>();
-        Stream.of(users).forEach(user -> userSet.add(user));
-        return userSet;
+        ForkJoinPool pool = new ForkJoinPool();
+        PairBuilderTask task = new PairBuilderTask(userPairs);
+        return pool.invoke(task);
     }
 }

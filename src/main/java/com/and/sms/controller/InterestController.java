@@ -15,6 +15,11 @@ public class InterestController {
 
     @RequestMapping(value = "/user")
     public String findUserPairListWithMaxLength(@RequestBody Set<String> userNames) {
-        return service.findUserPairListWithMaxLength(userNames).toString();
+        System.out.println("start...");
+        long startTime = System.currentTimeMillis();
+        String result = service.findUserPairListWithMaxLength(userNames).toString();
+        System.out.println("result time is " + (System.currentTimeMillis() - startTime));
+        System.out.println("finish...");
+        return result;
     }
 }
